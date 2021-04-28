@@ -1,4 +1,6 @@
 import sqlite3
+import sys
+from streamlit import cli as stcli
 
 import streamlit as st
 import pandas as pd
@@ -246,14 +248,27 @@ input_df = user_input_features()
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
-modell = st.selectbox('Wähle Vorhersagemodell', ('XG Boost', 'Stochastic Gradient Boosting', 'Random Forrest'))
+modell = st.selectbox('Wähle Vorhersagemodell', ('XG Boost', 'Gradient Boosting', 'Random Forrest',
+                                                 'Voting Regressor', 'Stacking Regressor'))
 # Einlesen des Models aus der Pickle-Datei
 if modell == 'XG Boost':
     load_modell = pickle.load(open('XGB_Standardmodell.pckl', 'rb'))
-elif modell == 'Stochastic Gradient Boosting':
+elif modell == 'Gradient Boosting':
     load_modell = pickle.load(open('sgbr_Standardmodell.pckl', 'rb'))
 elif modell == 'Random Forrest':
     load_modell = pickle.load(open('rf_Standardmodell.pckl', 'rb'))
+elif modell == 'Voting Regressor':
+    load_modell = pickle.load(open('Voting_Regressor.pckl', 'rb'))
+elif modell == 'Stacking Regressor':
+    load_modell = pickle.load(open('Stacking_Regressor.pckl', 'rb'))
+
+rmse = st.beta_expander('Übersicht der RMSE-Werte der Modelle')
+with rmse:
+    st.image('Files/Feature_Importances_Grafiken/RMSE.jpg')
+
+# Abstandshalter
+st.write(' ')
+st.image('Files/GUI/AbstandshalterAWI.jpg')
 
 # Definition des Outputs
 output = ''
@@ -417,10 +432,12 @@ feature_importances = st.beta_expander('Anzeige der wichtigsten Features')
 with feature_importances:
     if modell == 'XG Boost':
         st.image('Files/Feature_Importances_Grafiken/xgb_feature_importances.jpg')
-    elif modell == 'Stochastic Gradient Boosting':
+    elif modell == 'Gradient Boosting':
         st.image('Files/Feature_Importances_Grafiken/sgbr_feature_importances.jpg')
     elif modell == 'Random Forrest':
         st.image('Files/Feature_Importances_Grafiken/rf_feature_importances.jpg')
+    else:
+        st.write('Voting und Stacking Regressor sind Kombinationen der drei vorherigen Modelle. Um Informationen zur Feature Importance zu erhalten, sollten diese ausgewählt werden.')
 
 # Abstandshalter
 st.write('')
@@ -438,4 +455,7 @@ if st.button('Explorative Datenanalyse'):
     st_profile_report(load_pr)
 
 if __name__ == "__main__":
+    #filename = 'User_Interface_AWI.py'
+    #sys.argv = ["streamlit", "run", filename]
+    #sys.exit(stcli.main())
     print('Hello')

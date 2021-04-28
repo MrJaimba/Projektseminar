@@ -10,6 +10,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import VotingRegressor
+from sklearn.ensemble import StackingRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
 from category_encoders import TargetEncoder
@@ -23,11 +25,12 @@ def print_feature_importances(model, data, save_string):
     importances = pd.Series(data=model.feature_importances_,
                             index=data.columns)
     importances_sorted = importances.sort_values()[:10]
-    importances_sorted.plot(kind='barh', color='lightgreen')
-    plt.title('Features Importances')
+    importances_sorted.plot(kind='barh', color='blue')
+    plt.title('Feature importance')
     fig = plt.gcf()
     fig.set_size_inches(17.5, 8)
     plt.savefig(save_string)
+    plt.close(fig)
 # Entfernen der Ausreisser
 def outlier_treatment(datacolumn):
     sorted(datacolumn)
@@ -171,11 +174,12 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
 
     # XGBoost Standardmodell
 
-    xg_reg = xgb.XGBRegressor(objective="reg:squarederror", n_estimators=50, seed=123)
+    xg_reg = xgb.XGBRegressor(objective="reg:squarederror", n_estimators=2400, max_depth=5, min_child_weight=2, eta=0.1,
+                              subsample=1, colsample_bytree=1)
     xg_reg.fit(x_train, y_train)
     preds = xg_reg.predict(x_test)
-    rmse = np.sqrt(mean_squared_error(y_test, preds))
-    print("RMSE: %f" % rmse)
+    rmse_xgb = np.sqrt(mean_squared_error(y_test, preds))
+    print("RMSE: %f" % rmse_xgb)
     print()
 
     datestr = time.strftime("%Y%m%d-%H%M")
@@ -188,6 +192,7 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
     fig = plt.gcf()
     fig.set_size_inches(17.5, 8 )
     plt.savefig('Files/Feature_Importances_Grafiken/xgb_feature_importances.jpg')
+    plt.close(fig)
 
     # Grid Search parameter Tuning
     print("Grid Search Parameter Tuning:")
@@ -242,16 +247,16 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
 
     # Stochastic Gradient Boosting
     print("Stochastic Gradient Boosting:")
-    sgbr = GradientBoostingRegressor(max_depth=4,
+    sgbr = GradientBoostingRegressor(max_depth=5,
                                      subsample=0.9,
                                     max_features=0.75,
-                                     n_estimators=200,
+                                     n_estimators=2500,
                                      random_state=2)
 
     sgbr.fit(x_train, y_train)
     y_pred = sgbr.predict(x_test)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-    print("RMSE: %f" % rmse)
+    rmse_sgbr = np.sqrt(mean_squared_error(y_test, y_pred))
+    print("RMSE: %f" % rmse_sgbr)
     print()
 
     sgbr_file = 'sgbr_Standardmodell.pckl'
@@ -262,12 +267,13 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
 
     # Random Forrest
     print("Random Forrest:")
-    rf = RandomForestRegressor(n_estimators=25,
+    rf = RandomForestRegressor(n_estimators=150,
+                               max_features=0.8,
                                random_state=2)
     rf.fit(x_train, y_train)
     y_pred2 = rf.predict(x_test)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred2))
-    print("RMSE: %f" % rmse)
+    rmse_rf = np.sqrt(mean_squared_error(y_test, y_pred2))
+    print("RMSE: %f" % rmse_rf)
     print()
 
     rf_file = 'rf_Standardmodell.pckl'
@@ -275,3 +281,41 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
         pickle.dump(rf, f)
 
     print_feature_importances(model=rf, data=imputed_data.drop(columns=["angebotspreis"]), save_string='Files/Feature_Importances_Grafiken/rf_feature_importances.jpg')
+
+    print('Voting Regressor:')
+    ereg = VotingRegressor(estimators=[('xgb', xg_reg), ('rf', rf), ('sgbr', sgbr)])
+    ereg.fit(x_train, y_train)
+    y_pred_ereg = ereg.predict(x_test)
+    rmse_ereg = np.sqrt(mean_squared_error(y_test, y_pred_ereg))
+    print("RMSE: %f" % rmse_ereg)
+    print()
+
+    vr_file = 'Voting_Regressor.pckl'
+    with open(vr_file, 'wb') as f:
+        pickle.dump(ereg, f)
+
+    print('Stacking Regressor:')
+    estimators = [('xgb', xg_reg), ('rf', rf), ('sgbr', sgbr)]
+    final_estimator = xgb.XGBRegressor(objective="reg:squarederror", n_estimators=407, max_depth=4, min_child_weight=2,
+                                       eta=0.1, subsample=1, colsample_bytree=1, seed=123)
+    st_reg = StackingRegressor(estimators=estimators, final_estimator=final_estimator, n_jobs=2)
+    st_reg.fit(x_train, y_train)
+    y_pred_st_reg = st_reg.predict(x_test)
+    rmse_st = np.sqrt(mean_squared_error(y_test, y_pred_st_reg))
+    print("RMSE: %f" % rmse_st)
+    print()
+
+    st_file = 'Stacking_Regressor.pckl'
+    with open(st_file, 'wb') as f:
+        pickle.dump(st_reg, f)
+
+    fehler = pd.Series(data={'XG Boost': rmse_xgb, 'Gradient Boosting': rmse_sgbr, 'Random Forrest': rmse_rf, 'Voting Regressor': rmse_ereg, 'Stacking Regressor': rmse_st})
+    fehler.sort_values().plot(kind='barh', color='blue')
+    fig = plt.gcf()
+    fig.set_size_inches(14, 5)
+    plt.title('RMSE der einzelnen Modelle')
+    plt.xlabel('RMSE')
+    plt.savefig('Files/Feature_Importances_Grafiken/RMSE.jpg')
+    plt.xlim(110000, 121000)
+    plt.close(fig)
+
