@@ -1,4 +1,5 @@
 #Ignored Files
 venv/
+/.pckl
 /.idea
 .DS_Store
