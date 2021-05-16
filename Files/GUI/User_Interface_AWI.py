@@ -1,9 +1,14 @@
 import sqlite3
+import sys
+
+from pandas_profiling import ProfileReport
+from streamlit import cli as stcli
 
 import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
+import pandas_profiling
 from streamlit.script_runner import RerunException, StopException
 from streamlit_pandas_profiling import st_profile_report
 
@@ -30,7 +35,8 @@ st.write('Du möchtest den Wert deiner Immobilie exakt berechnen und benötigst 
 
 
 #Button und Infotext
-if st.button('mehr Informationen'):
+infos = st.beta_expander('Mehr Informationen')
+with infos:
     st.write('Was ist AWI?')
     st.write('AWI ist ein Analysetool für die Immobilienwertermittlung und bietet dir umfangreiche Analysemöglichkeiten rund um die Bewertung deiner Immobilie.')
     st.write('---')
@@ -38,8 +44,8 @@ if st.button('mehr Informationen'):
     st.write('AWI ist ein Akronym für: Analysetool für die Wertermittlung von Immobilien')
     st.write('---')
     st.write('Was ist an AWI besonders?')
-    st.write('Immobilienbewertungstools gibt es wie Sand am Meer :palm_tree: Doch AWI ist keine gewohnliche App zur reinen Bewertung von Immobilien. Um eine fundierte Entscheidungen in Hinblick auf den Kauf bzw. Verkauf einer Immobilie zu treffen, sind tiefgreifende Informationen zur eigenen Immobilie notwendig. Im Gegensatz zu herkömmlichen Tools, bietet AWI diese Informationen. Neben einer aussagekräftigen Immobilienbewertung, die AWI mithilfe eines intelligenten Machine Learning Ansatzes ermittelt, bietet AWI weiterführende Analysen, um eine möglichst umfangreiche Immobilienbetrachtung zu ermöglichen. AWI bietet beispielsweise eine exakte Beschreibung welchen Einfluss die von dir hinterlegten Faktoren auf den Immobilienpreis nehmen. So kannst du zum Beispiel zukünftige Investitionen in deine Immobilie besser planen.')        
-st.write('---')
+    st.write('Immobilienbewertungstools gibt es wie Sand am Meer :palm_tree: Doch AWI ist keine gewöhnliche App zur reinen Bewertung von Immobilien. Um eine fundierte Entscheidung in Hinblick auf den Kauf bzw. Verkauf einer Immobilie zu treffen, sind tiefgreifende Informationen zur eigenen Immobilie notwendig. Im Gegensatz zu herkömmlichen Tools, bietet AWI diese Informationen. Neben einer aussagekräftigen Immobilienbewertung, die AWI mit Hilfe eines intelligenten Machine Learning Ansatzes ermittelt, bietet AWI weiterführende Analysen, um eine möglichst umfangreiche Immobilienbetrachtung zu ermöglichen. AWI bietet beispielsweise eine exakte Beschreibung welchen Einfluss die von dir hinterlegten Faktoren auf den Immobilienpreis nehmen. So kannst du zum Beispiel zukünftige Investitionen in deine Immobilie besser planen.')
+st.write('')
 
 
 #Überschrift und Abstandshalter
@@ -51,8 +57,12 @@ st.subheader('Beschreibe deine Immobilie:')
 def user_input_features():
     
         #Eingabefeld 1 (Wohnfläche, Grundstücksfläche, Baujahr, PLZ)
-        wohnflaeche = st.slider('Wohnfläche', 0, 1000, 145)
-        grundstuecksflaeche = st.slider('Grundstücksfläche', 0, 1000, 430)
+
+        col1, col2 = st.beta_columns(2)
+        with col1:
+            wohnflaeche = st.number_input('Wohnfläche', value=100)
+        with col2:
+            grundstuecksflaeche = st.number_input('Grundstücksfläche', value=400)
         
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -87,10 +97,6 @@ def user_input_features():
                     'Bungalow',
                     'Maisonette',
                     'Apartment',
-                    'Stadthaus',
-                    'Schloss',
-                    'Bauernhaus',
-                    'Herrenhaus',
                     'Reiheneckhaus',
                     'Penthouse',
                     'Unbekannt'))
@@ -246,14 +252,26 @@ input_df = user_input_features()
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
-modell = st.selectbox('Wähle Vorhersagemodell', ('XG Boost', 'Stochastic Gradient Boosting', 'Random Forrest'))
+modell = st.selectbox('Wähle Vorhersagemodell', ('XG Boost', 'Gradient Boosting', 'Random Forrest',
+                                                 'Voting Regressor'))
 # Einlesen des Models aus der Pickle-Datei
 if modell == 'XG Boost':
     load_modell = pickle.load(open('XGB_Standardmodell.pckl', 'rb'))
-elif modell == 'Stochastic Gradient Boosting':
+elif modell == 'Gradient Boosting':
     load_modell = pickle.load(open('sgbr_Standardmodell.pckl', 'rb'))
 elif modell == 'Random Forrest':
     load_modell = pickle.load(open('rf_Standardmodell.pckl', 'rb'))
+elif modell == 'Voting Regressor':
+    load_modell = pickle.load(open('Voting_Regressor.pckl', 'rb'))
+
+rmse_r2 = st.beta_expander('Übersicht der RMSE Werte und R2 Scores der einzelnen Modelle')
+with rmse_r2:
+    st.image('Files/Feature_Importances_Grafiken/RMSE.jpg')
+    st.image('Files/Feature_Importances_Grafiken/R2.jpg')
+
+# Abstandshalter
+st.write(' ')
+st.image('Files/GUI/AbstandshalterAWI.jpg')
 
 # Definition des Outputs
 output = ''
@@ -278,15 +296,19 @@ with Metadaten_plz:
     st.write('Wähle eine Postleitzahl, zu der du weitere Informationen erhalten möchtest:')
 
     plz = st.number_input('', min_value=63739, max_value=97909, value=97070)
+    if plz not in pd.read_sql_query('SELECT plz FROM Meta_Data_upd', con=db_connection)['plz'].to_list():
+        st.error('Diese Postleitzahl befindet sich nicht in der Datenbank')
+        raise StopException()
     st.write('---')
 
     Meta = pd.read_sql_query('SELECT * FROM Meta_Data_upd2 WHERE plz=plz', con=db_connection, index_col="index")
     #Meta_ort = Meta[Meta['plz'] == plz]['Hilfe Ort'].to_list()[0]
     Meta_einwohner = Meta[Meta['plz'] == plz]['Einwohner je PLZ'].to_list()[0]
-    Meta_einkommen = Meta[Meta['plz'] == plz]['Durschnittseinkommen'].to_list()[0]
+    Meta_einkommen = str(Meta[Meta['plz'] == plz]['Durschnittseinkommen'].to_list()[0]) + '€'
     Meta_arbeit = Meta[Meta['plz'] == plz]['Arbeitslosenquote in Prozent'].to_list()[0]
     Meta_sozio = Meta[Meta['plz'] == plz]['sozioökonomische_Lage'].to_list()[0]
-    Meta_miete = Meta[Meta['plz'] == plz]['Kaltmiete / qm'].to_list()[0]
+    Meta_miete = str(round(Meta[Meta['plz'] == plz]['Kaltmiete / qm'].to_list()[0], 2)) + '€'
+    Meta_durschnittspreis = str(round(Meta[Meta['plz'] == plz]['plz_durchschnittspreis'].to_list()[0])) + '€'
     Meta_abschluss = Meta[Meta['plz'] == plz]['Anteil nicht erfolgreicher beruflicher Bildungsgänge'].to_list()[0]
     Meta_schulabbrecher = Meta[Meta['plz'] == plz]['Anteil Schulabbrecher'].to_list()[0]
     Meta_allghoch = Meta[Meta['plz'] == plz]['Anteil Absolventen mit allgemeiner Hochschulreife'].to_list()[0]
@@ -298,9 +320,14 @@ with Metadaten_plz:
     Meta_grüngesamt = Meta[Meta['plz'] == plz]['Anteil Grünflächen an Gesamtfläche'].to_list()[0]
     Meta_erholunggesamt = Meta[Meta['plz'] == plz]['Anteil Erholungsflächen an Gesamtfläche'].to_list()[0]
     Meta_supermarkt = Meta[Meta['plz'] == plz]['Supermarkt im PLZ Gebiet'].to_list()[0]
-    Meta_zahnarzt = Meta[Meta['plz'] == plz]['Erreichbarkeit von Zahnärzten'].to_list()[0]
-    Meta_apotheken = Meta[Meta['plz'] == plz]['Erreichbarkeit von Apotheken'].to_list()[0]
-    Meta_lebensmittel = Meta[Meta['plz'] == plz]['Erreichbarkeit von Lebensmittelgeschäften'].to_list()[0]
+    Meta_zahnarzt = round(Meta[Meta['plz'] == plz]['Erreichbarkeit von Zahnärzten'].to_list()[0], 2)
+    Meta_apotheken = round(Meta[Meta['plz'] == plz]['Erreichbarkeit von Apotheken'].to_list()[0], 2)
+    Meta_lebensmittel = round(Meta[Meta['plz'] == plz]['Erreichbarkeit von Lebensmittelgeschäften'].to_list()[0], 2)
+    Meta_hausarzt = round(Meta[Meta['plz'] == plz]['Erreichbarkeit von Hausärzten'].to_list()[0], 2)
+    Meta_bahnhof = round(Meta[Meta['plz'] == plz]['Erreichbarkeit Bahnhof'].to_list()[0], 2)
+    Meta_krankenhaus = round(Meta[Meta['plz'] == plz]['Erreichbarkeit Krankenhaus mit Maximalversorgung'].to_list()[0], 2)
+    Meta_kindergarten = round(Meta[Meta['plz'] == plz]['Erreichbarkeit von Kindergarten'].to_list()[0], 2)
+    Meta_oberzentrum = round(Meta[Meta['plz'] == plz]['Erreichbarkeit Oberzentrum'].to_list()[0], 2)
     Meta_durchschnittsalter = Meta[Meta['plz'] == plz]['Durschnittsalter'].to_list()[0]
     Meta_lte = Meta[Meta['plz'] == plz]['LTE Abdeckung'].to_list()[0]
     Meta_breitband = Meta[Meta['plz'] == plz]['Breitbandversorgung'].to_list()[0]
@@ -310,17 +337,17 @@ with Metadaten_plz:
 
     col1, col2 = st.beta_columns(2)
     with col1:
-        #st.write('Ort deiner Postleitzahl:')
-        #st.info(Meta_ort)
-
         st.write('Durchschnittseinkommen:')
         st.info(Meta_einkommen)
 
         st.write('Sozioökonomische Lage:')
         st.info(Meta_sozio)
 
+        st.write('Durchschnittspreis pro PLZ:')
+        st.info(Meta_durschnittspreis)
+
     with col2:
-        st.write('Einwohner:')
+        st.write('Einwohner pro PLZ:')
         st.info(Meta_einwohner)
 
         st.write('Arbeitslosenquote in Prozent:')
@@ -338,7 +365,7 @@ with Metadaten_plz:
             st.write('Anteil Schulabbrecher:')
             st.info(Meta_schulabbrecher)
 
-            st.write(' Anteil nicht erfolgreicher beruflicher Bildungsgänge:')
+            st.write('Anteil nicht erfolgreicher beruflicher Bildungsgänge:')
             st.info(Meta_abschluss)
 
         with col2:
@@ -354,10 +381,10 @@ with Metadaten_plz:
             st.write('Durchschnittsalter:')
             st.info(Meta_durchschnittsalter)
 
-            st.write('LTE Abdeckung:')
+            st.write('LTE Abdeckung in %:')
             st.info(Meta_lte)
 
-            st.write('Breitbandversorgung:')
+            st.write('Breitbandversorgung In %:')
             st.info(Meta_breitband)
 
         with col2:
@@ -367,7 +394,7 @@ with Metadaten_plz:
             st.write('Grad der Verstädterung:')
             st.info(Meta_verstädterung)
 
-            st.write('Anzahl Gästeübernachtungen:')
+            st.write('Anzahl Gästeübernachtungen im Jahr:')
             st.info(Meta_übernachtungen)
 
     if st.button('Anteil der Flächennutzung'):
@@ -393,13 +420,20 @@ with Metadaten_plz:
             st.info(Meta_erholunggesamt)
 
     if st.button('Erreichbarkeiten wesentlicher Einrichtungen'):
+        st.write('Angaben in Wegzeit mit dem Auto in Minuten')
         col1, col2 = st.beta_columns(2)
         with col1:
-            st.write('Supermarkt im PLZ Gebiet?:')
-            st.info(Meta_supermarkt)
+            st.write('Erreichbarkeit Krankenhaus')
+            st.info(Meta_krankenhaus)
 
             st.write('Erreichbarkeit von Zahnärzten:')
             st.info(Meta_zahnarzt)
+
+            st.write('Erreichbarkeit von Hausärzten')
+            st.info(Meta_hausarzt)
+
+            st.write('Erreichbarkeit Kindergarten')
+            st.info(Meta_kindergarten)
 
         with col2:
             st.write('Erreichbarkeit von Apotheken:')
@@ -407,6 +441,12 @@ with Metadaten_plz:
 
             st.write('Erreichbarkeit von Lebensmittelgeschäften:')
             st.info(Meta_lebensmittel)
+
+            st.write('Erreichbarkeit Bahnhof')
+            st.info(Meta_bahnhof)
+
+            st.write('Erreichbarkeit Oberzentrum')
+            st.info(Meta_oberzentrum)
 
 # Abstandshalter
 st.write('')
@@ -417,25 +457,41 @@ feature_importances = st.beta_expander('Anzeige der wichtigsten Features')
 with feature_importances:
     if modell == 'XG Boost':
         st.image('Files/Feature_Importances_Grafiken/xgb_feature_importances.jpg')
-    elif modell == 'Stochastic Gradient Boosting':
+    elif modell == 'Gradient Boosting':
         st.image('Files/Feature_Importances_Grafiken/sgbr_feature_importances.jpg')
     elif modell == 'Random Forrest':
         st.image('Files/Feature_Importances_Grafiken/rf_feature_importances.jpg')
+    else:
+        st.write('Voting Regressor ist eine Kombination der drei vorherigen Modelle. Um Informationen zur Feature Importance zu erhalten, sollten diese ausgewählt werden.')
 
 # Abstandshalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
 # weitere graphische Darstellungen
-if st.button('Graphische Datenanalyse'):
-    data = pd.read_csv('Files/GUI/imputed_data_original.csv')
+if st.button('Geographische Verteilung der Inputdaten'):
+    data = pd.read_sql_query('SELECT breitengrad as lat, laengengrad as lon from Imputed_data_raw', con=db_connection)
+    #data = pd.read_csv('Files/GUI/imputed_data_original.csv')
     st.map(data)
-    
+
+# Abstandshalter
+st.write('')
+st.image('Files/GUI/AbstandshalterAWI.jpg')
 
     # EDA
-if st.button('Explorative Datenanalyse'):
-    load_pr = pickle.load(open('pr.pkl', 'rb'))
-    st_profile_report(load_pr)
+if st.button('Explorative Datenanalyse der Inputdaten'):
+    #data = pd.read_sql_query('SELECT * FROM Imputed_data_raw', con=db_connection)
+    #data.drop(columns=['plz', 'breitengrad', 'laengengrad'], inplace=True)
+    #data = data.profile_report()
+    #st_profile_report(data)
+    data = pd.read_sql_query('SELECT * FROM profile_report_data', con=db_connection)
+    data.drop(columns=['index', 'plz'], inplace=True)
+    pr = ProfileReport(data.iloc[:, : 18], explorative=True)
+    #load_pr = pickle.load(open('profile_report.pckl', 'rb'))
+    st_profile_report(pr)
 
 if __name__ == "__main__":
+    #filename = 'User_Interface_AWI.py'
+    #sys.argv = ["streamlit", "run", filename]
+    #sys.exit(stcli.main())
     print('Hello')
