@@ -4,7 +4,7 @@ import pandas as pd
 import sqlite3
 from sqlite3 import Error
 
-import main
+import model_training
 db_connection = sqlite3.connect('Datenbank/ImmoDB.db')
 input_df = pd.read_sql_query('SELECT * FROM Meta_Data_upd', con=db_connection, index_col="index")
 input_df.drop_duplicates(subset=['plz'], inplace=True)

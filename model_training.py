@@ -89,6 +89,14 @@ def main():
     # plz_ort.to_sql(name='Meta_Data_ort', con=db_connection, if_exists='replace')
 
 
+
+
+
+
+
+
+
+
     # Machine Learning
     print("Step 7: Machine learning tests...")
     imputed_data = pd.read_sql_query('SELECT * FROM ML_Trainingsdaten_upd', db_connection, index_col='index')
@@ -141,6 +149,11 @@ def main():
     x_test.to_sql(name='X_test', con=db_connection, if_exists='replace')
     # Durchführung der ML-Test
     ml.ml_tests(x_train, x_test, y_train, y_test, imputed_data)
+
+
+
+
+
 
     # Testausgaben
     # print("Optional: Create Excel files...")

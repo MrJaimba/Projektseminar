@@ -1,17 +1,16 @@
 import sqlite3
 import sys
-
-from pandas_profiling import ProfileReport
-from streamlit import cli as stcli
-
 import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
 import pandas_profiling
+
+
 from streamlit.script_runner import RerunException, StopException
 from streamlit_pandas_profiling import st_profile_report
-
+from pandas_profiling import ProfileReport
+from streamlit import cli as stcli
 
 # Änderungen an csv:
 # Datensatz von Lennart (Excel-Datei) kopieren, in Excel und Spalten zusammen (csv Format) dann folgende Änderungen:
@@ -491,7 +490,7 @@ if st.button('Explorative Datenanalyse der Inputdaten'):
     st_profile_report(pr)
 
 if __name__ == "__main__":
-    #filename = 'User_Interface_AWI.py'
+    #filename = 'User_Interface_AWI_alt.py'
     #sys.argv = ["streamlit", "run", filename]
     #sys.exit(stcli.main())
     print('Hello')
