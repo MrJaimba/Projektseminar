@@ -94,10 +94,10 @@ if __name__ == "__main__":
  #fig = plt.gcf()
  #fig.set_size_inches(17.5, 8 )
  #plt.savefig('Files/Feature_Importances_Grafiken/feature_importances.jpg')
- filename = 'Files/GUI/User_Interface_AWI.py'
+ filename = 'GUI.py'
  sys.argv = ["streamlit", "run", filename]
  sys.exit(stcli.main())
-
+ Test_Philipp.py
 
 
 
