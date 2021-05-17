@@ -24,6 +24,9 @@ st.set_page_config('AWI', 'Projektseminar/Files/GUI/Logo AWI klein.jpg', 'center
 
 #Logo einfügen
 st.image('Files/GUI/Logo AWI.jpg')
+
+
+#Abstandshalter
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
 
