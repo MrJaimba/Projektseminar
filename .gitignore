@@ -2,6 +2,5 @@
 venv/
 *.pckl
 /*.pckl
-!ML_Modelle
 /.idea
 .DS_Store
