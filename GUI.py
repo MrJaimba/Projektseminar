@@ -255,13 +255,13 @@ modell = st.selectbox('Wähle Vorhersagemodell', ('XG Boost', 'Gradient Boosting
                                                  'Voting Regressor'))
 # Einlesen des Models aus der Pickle-Datei
 if modell == 'XG Boost':
-    load_modell = pickle.load(open('XGB_Standardmodell.pckl', 'rb'))
+    load_modell = pickle.load(open('ML_Modelle/XGB_Standardmodell.pckl', 'rb'))
 elif modell == 'Gradient Boosting':
-    load_modell = pickle.load(open('sgbr_Standardmodell.pckl', 'rb'))
+    load_modell = pickle.load(open('ML_Modelle/sgbr_Standardmodell.pckl', 'rb'))
 elif modell == 'Random Forrest':
-    load_modell = pickle.load(open('rf_Standardmodell.pckl', 'rb'))
+    load_modell = pickle.load(open('ML_Modelle/rf_Standardmodell.pckl', 'rb'))
 elif modell == 'Voting Regressor':
-    load_modell = pickle.load(open('Voting_Regressor.pckl', 'rb'))
+    load_modell = pickle.load(open('ML_Modelle/Voting_Regressor.pckl', 'rb'))
 
 rmse_r2 = st.beta_expander('Übersicht der RMSE Werte und R2 Scores der einzelnen Modelle')
 with rmse_r2:

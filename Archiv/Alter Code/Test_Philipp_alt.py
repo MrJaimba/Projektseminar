@@ -89,8 +89,8 @@ db_connection = sqlite3.connect('../../Datenbank/ImmoDB.db')
 
 
 if __name__ == "__main__":
- #model = pickle.load(open('XGB_Standardmodell, 'rb'))
- #plot_importance(model, max_num_features=10)
+ #training_pipeline = pickle.load(open('XGB_Standardmodell, 'rb'))
+ #plot_importance(training_pipeline, max_num_features=10)
  #fig = plt.gcf()
  #fig.set_size_inches(17.5, 8 )
  #plt.savefig('Files/Feature_Importances_Grafiken/feature_importances.jpg')

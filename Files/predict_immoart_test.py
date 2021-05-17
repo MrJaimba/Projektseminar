@@ -55,12 +55,12 @@ df['immobilienart'] = df['immobilienart'].apply(target_encode)
 X = df.drop('immobilienart', axis=1)
 Y = df['immobilienart']
 
-# Build random forest model
+# Build random forest training_pipeline
 from sklearn.ensemble import RandomForestClassifier
 clf = RandomForestClassifier()
 clf.fit(X, Y)
 
-# Saving the model
+# Saving the training_pipeline
 import pickle
 pickle.dump(clf, open('immo_data_UI_clf.pkl', 'wb'))
 
@@ -161,10 +161,10 @@ else:
     st.write('Awaiting CSV file to be uploaded. Currently using example input parameters (shown below).')
     st.write(df)
 
-# Reads in saved classification model
+# Reads in saved classification training_pipeline
 load_clf = pickle.load(open('immo_data_UI_clf.pkl', 'rb'))
 
-# Apply model to make predictions
+# Apply training_pipeline to make predictions
 prediction = load_clf.predict(df)
 prediction_proba = load_clf.predict_proba(df)
 

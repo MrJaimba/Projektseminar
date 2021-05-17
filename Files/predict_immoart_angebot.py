@@ -23,12 +23,12 @@ Y = imputed_data['angebotspreis'].values
 
 x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
 
-# Build random forest model
+# Build random forest training_pipeline
 from sklearn.ensemble import RandomForestClassifier
 clf = RandomForestClassifier()
 clf.fit(x_train, y_train)
 
-# Saving the model
+# Saving the training_pipeline
 import pickle
 pickle.dump(clf, open('immo_data_angebot_clf.pkl', 'wb'))
 
@@ -150,10 +150,10 @@ else:
     st.write('Awaiting CSV file to be uploaded. Currently using example input parameters (shown below).')
     st.write(df)
 
-# Reads in saved classification model
+# Reads in saved classification training_pipeline
 load_clf = pickle.load(open('immo_data_angebot_clf.pkl', 'rb'))
 
-# Apply model to make predictions
+# Apply training_pipeline to make predictions
 X_new = input_df_enc.values
 prediction = load_clf.predict(X_new)
 prediction_proba = load_clf.predict_proba(X_new)

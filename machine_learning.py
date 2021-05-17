@@ -187,7 +187,7 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
 
     datestr = time.strftime("%Y%m%d-%H%M")
 
-    xg_reg_file = 'XGB_Standardmodell.pckl'
+    xg_reg_file = 'ML_Modelle/XGB_Standardmodell.pckl'
     with open(xg_reg_file, 'wb') as f:
         pickle.dump(xg_reg, f)
 
@@ -246,7 +246,7 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
     #print(pd.DataFrame(list(zip(reg_params, rmses_l2)), columns=["l2", "rmse"]))
     #print()
 
-    #print_feature_importances(model=xg_reg2, data=imputed_data.drop(columns=["angebotspreis"]))
+    #print_feature_importances(training_pipeline=xg_reg2, data=imputed_data.drop(columns=["angebotspreis"]))
 
     # Stochastic Gradient Boosting
     print("Stochastic Gradient Boosting:")
@@ -265,7 +265,7 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
     print('R2 score: ' + str(r2_sgbr))
     print()
 
-    sgbr_file = 'sgbr_Standardmodell.pckl'
+    sgbr_file = 'ML_Modelle/sgbr_Standardmodell.pckl'
     with open(sgbr_file, 'wb') as f:
         pickle.dump(sgbr, f)
 
@@ -286,7 +286,7 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
     print('R2 score: ' + str(r2_rf))
     print()
 
-    rf_file = 'rf_Standardmodell.pckl'
+    rf_file = 'ML_Modelle/rf_Standardmodell.pckl'
     with open(rf_file, 'wb') as f:
         pickle.dump(rf, f)
 
@@ -302,7 +302,7 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
     print('R2 score: ' + str(r2_ereg))
     print()
 
-    vr_file = 'Voting_Regressor.pckl'
+    vr_file = 'ML_Modelle/Voting_Regressor.pckl'
     with open(vr_file, 'wb') as f:
         pickle.dump(ereg, f)
 
@@ -319,7 +319,7 @@ def ml_tests(x_train, x_test, y_train, y_test, imputed_data):
     #print('R2 score: ' + str(r2_st_reg))
     #print()
 
-    #st_file = 'Stacking_Regressor.pckl'
+    #st_file = 'ML_Modelle/Stacking_Regressor.pckl'
     #with open(st_file, 'wb') as f:
         #pickle.dump(st_reg, f)
 

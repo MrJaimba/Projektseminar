@@ -21,7 +21,7 @@ def setup_database(path):
     return db_connection
 
 
-def main():
+def training_pipeline():
     # Datumsstring für Zwischenspeichern von Files
     datestr = time.strftime("%Y%m%d")
 
@@ -172,4 +172,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    training_pipeline()
