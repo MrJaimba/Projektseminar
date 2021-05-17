@@ -11,14 +11,13 @@ from streamlit.script_runner import RerunException, StopException
 from streamlit_pandas_profiling import st_profile_report
 from pandas_profiling import ProfileReport
 from streamlit import cli as stcli
-
-# Änderungen an csv:
-# Datensatz von Lennart (Excel-Datei) kopieren, in Excel und Spalten zusammen (csv Format) dann folgende Änderungen:
-# Alle ohne Grundstücksfläche und Wohnfläche raus
-# Spalten raus: Längengrad, Breitengrad, PLZ
 from xgboost import plot_importance
 
+
+#Datenbankanbindung
 db_connection = sqlite3.connect('Datenbank/ImmoDB.db')
+
+
 # allgemeine Streamlit Einstellungen (Tab Name; Icon; Seitenlayout; Menü)
 st.set_page_config('AWI', 'Projektseminar/Files/GUI/Logo AWI klein.jpg', 'centered', 'expanded')
 
