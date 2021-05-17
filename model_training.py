@@ -64,8 +64,8 @@ def training_pipeline():
     preprocessed_data = dm.preprocess_data(merged_data)
     # preprocessed_data.to_csv("Files/Tests/preprocessed_data_" + datestr + ".csv", encoding= 'utf-8-sig')
 
-    # EDA
-    # print("Step 5: EDA...")
+    # EDA_Grafiken
+    # print("Step 5: EDA-Grafiken...")
 
     # eda(preprocessed_data)
 

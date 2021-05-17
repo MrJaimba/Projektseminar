@@ -477,7 +477,7 @@ if st.button('Geographische Verteilung der Inputdaten'):
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
-    # EDA
+    # EDA_Grafiken
 if st.button('Explorative Datenanalyse der Inputdaten'):
     #data = pd.read_sql_query('SELECT * FROM Imputed_data_raw', con=db_connection)
     #data.drop(columns=['plz', 'breitengrad', 'laengengrad'], inplace=True)

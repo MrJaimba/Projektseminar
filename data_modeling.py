@@ -392,13 +392,13 @@ def eda(data):
     sns.histplot(data['angebotspreis'], stat='count', bins='auto').set(xlabel='Angebotspreis', ylabel='Anzahl')
     plt.ticklabel_format(style="plain")
     plt.title("Angebotspreis Histogramm")
-    plt.savefig(r"Files/EDA/Angebotspreis_Histogram")
+    plt.savefig(r"Files/EDA_Grafiken/Angebotspreis_Histogram")
     plt.clf()
 
     # Korrelation numerische Variablen
     corrMatrix = numeric_data.corr()
     sns.heatmap(corrMatrix, annot=True)
-    plt.savefig(r"Files/EDA/Heatmap_Correlation")
+    plt.savefig(r"Files/EDA_Grafiken/Heatmap_Correlation")
     plt.clf()
 
     # Übersicht: Boxplots + Histogramme für numerische Variablen
@@ -410,7 +410,7 @@ def eda(data):
         sns.distplot(numeric_data[col], ax=axes[i][0]).set_title("Histogram of " + col)
         sns.boxplot(numeric_data[col], ax=axes[i][1]).set_title("Boxplot of " + col)
         i = i + 1
-    plt.savefig(r"Files/EDA/Numerics_Boxplots_Histograms")
+    plt.savefig(r"Files/EDA_Grafiken/Numerics_Boxplots_Histograms")
     plt.clf()
 
     # Countplots für kategorische Variablen
@@ -418,7 +418,7 @@ def eda(data):
                                  col_wrap=4)
     CatFacetGrid.set_xticklabels(rotation=90)
     CatFacetGrid.map(sns.countplot, 'value')
-    plt.savefig(r"Files/EDA/Countplots_Categories")
+    plt.savefig(r"Files/EDA_Grafiken/Countplots_Categories")
     plt.clf()
 
     # Angebotspreis und kategorische Variablen
@@ -426,7 +426,7 @@ def eda(data):
     for var, subplot in zip(categoric_data, ax.flatten()):
         ax = sns.boxplot(x=var, y='angebotspreis', data=data, ax=subplot)
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
-    plt.savefig(r"Files/EDA/Relations_Angebotspreis_Categories")
+    plt.savefig(r"Files/EDA_Grafiken/Relations_Angebotspreis_Categories")
     plt.clf()
 
     print("...eda finished!")

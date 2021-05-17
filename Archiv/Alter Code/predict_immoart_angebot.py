@@ -166,4 +166,4 @@ st.write(immo_data_immoart[prediction])
 st.subheader('Prediction Probability')
 st.write(prediction_proba)
 
-#EDA hinten dran
+#EDA_Grafiken hinten dran
