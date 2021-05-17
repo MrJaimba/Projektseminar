@@ -30,12 +30,9 @@ st.image('Files/GUI/Logo AWI.jpg')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
 
-#Infotext
+#Infobereich
 st.subheader('Starte jetzt deine Immobilienbewertung mit AWI')
 st.write('Du möchtest den Wert deiner Immobilie exakt berechnen und benötigst weiterführende Analysemöglichkeiten rund um deine Immobilie? Dann bist du bei AWI genau richtig!')
-
-
-#Button und Infotext
 infos = st.beta_expander('Mehr Informationen')
 with infos:
     st.write('Was ist AWI?')
