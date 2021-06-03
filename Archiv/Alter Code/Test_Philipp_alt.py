@@ -94,7 +94,7 @@ if __name__ == "__main__":
  #fig = plt.gcf()
  #fig.set_size_inches(17.5, 8 )
  #plt.savefig('Files/Feature_Importances_Grafiken/feature_importances.jpg')
- filename = '../../GUI.py'
+ filename = '../../gui.py'
  sys.argv = ["streamlit", "run", filename]
  sys.exit(stcli.main())
  Test_Philipp.py

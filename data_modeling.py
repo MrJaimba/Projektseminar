@@ -6,16 +6,18 @@ import re
 
 
 def read_data_from_immonet():
-    # Selbst gescrapte Daten von Immonet
+    # Selbst gescrapte Daten von Immonet in Dataframe
     immonet_data = pd.read_excel(r"Files/Input_Data/Immonet_Bayern_31032021.xlsx", sheet_name="Tabelle2")
 
     return immonet_data
 
 
 def read_data_from_immoscout():
+    # Gescrapte Daten von Immoscout in Dataframe
     immoscout_data_haeuser = pd.read_excel(r"Files/Input_Data/Immoscout_Bayern_Häuser_17032021.xlsx",
                                            sheet_name="Tabelle3")
-    immoscout_data_wohnungen = pd.read_excel(r"Files/Input_Data/Immoscout_Bayern_Wohnungen_17032021.xlsx", sheet_name="Tabelle2")
+    immoscout_data_wohnungen = pd.read_excel(r"Files/Input_Data/Immoscout_Bayern_Wohnungen_17032021.xlsx",
+                                             sheet_name="Tabelle2")
 
     immoscout_data = pd.concat([immoscout_data_haeuser, immoscout_data_wohnungen], axis=0, ignore_index=True)
 
@@ -23,19 +25,19 @@ def read_data_from_immoscout():
 
 
 def read_geo_data():
-    # Datensatz mit Koordinaten von Timo
+    # Datensatz mit Koordinaten (Längen- und Breitengrad) zu PLZ Mittelpunkt
     geo_data = pd.read_excel(r'Files/Meta_Data/PLZ_Geodaten.xlsx', sheet_name='PLZ')
     return geo_data
 
 
 def read_data_from_inhabitants():
-    # Datensatz mit Einwohnern von Yanina
+    # Datensatz mit Einwohnerinformationen zu PLZs
     inhabitants = pd.read_excel(r'Files/Meta_Data/PLZ_Einwohnerzahlen.xlsx', sheet_name='Tabelle2')
     return inhabitants
 
 
 def add_geo_inhabitants_immonet(immonet_data, geo_data, inhabitants):
-    # Koordinaten und Einwohner auf Immonet-Daten anpassen
+    # Koordinaten- und Einwohnerinformationen zu Immonet-Daten hinzufügen
 
     immonet_data = immonet_data.dropna(subset=['plz'])
     immonet_data['plz'] = immonet_data['plz'].astype(int)
@@ -69,7 +71,7 @@ def add_geo_inhabitants_immonet(immonet_data, geo_data, inhabitants):
 
 
 def add_geo_inhabitants_immoscout(immoscout_data, geo_data, inhabitants):
-    # Koordinaten und Einwohner auf Immonet - Daten anpassen
+    # Koordinaten- und Einwohnerinformationen zu Immoscout-Daten hinzufügen
 
     geo_data = geo_data.astype(str)
     immoscout_data["plz"] = immoscout_data["PLZ und Ort"].astype(str).apply(lambda row: row[:5])
@@ -99,6 +101,7 @@ def add_geo_inhabitants_immoscout(immoscout_data, geo_data, inhabitants):
 
 
 def merge_data(immonet_data_new, immoscout_data_new):
+    # Daten zusammenführen (von Immonet und Immoscout)
 
     # Immoscout Format an Immonet Format anpassen:
     immoscout_data_new.columns = immoscout_data_new.columns.str.lower()
@@ -125,8 +128,9 @@ def merge_data(immonet_data_new, immoscout_data_new):
         lambda row: 'JA' if 'JA' in row else 'NEIN')
     immonet_data_new = immonet_data_new.drop(columns=['terrasse', 'balkon'])
 
-    # 'E' die irrtümlich mitgescraped wurden entfernen
-    immonet_data_new['anzahl_badezimmer'] = immonet_data_new["anzahl_badezimmer"].apply(lambda row: '0' if row == 'E' else row)
+    # Sonderfall: 'E'-Werte, die mitgescraped wurden entfernen
+    immonet_data_new['anzahl_badezimmer'] = immonet_data_new["anzahl_badezimmer"].apply(
+        lambda row: '0' if row == 'E' else row)
     immonet_data_new["anzahl_badezimmer"] = immonet_data_new["anzahl_badezimmer"].astype(int)
 
     immoscout_data_new["aufzug"] = immoscout_data_new["aufzug"].astype(str).apply(
@@ -148,7 +152,7 @@ def merge_data(immonet_data_new, immoscout_data_new):
         lambda row: re.sub('[\\D]', '', str(row)))
     immoscout_data_new["baujahr"] = pd.to_numeric(immoscout_data_new["baujahr"])
 
-    # Problem mit tausender Punkten lösen
+    # Dezimalstellen und Tausender Trennzeichen auflösen und einheitlich formatieren
     immoscout_data_new["grundstuecksflaeche"] = immoscout_data_new["grundstuecksflaeche"].astype(str).apply(
         lambda row: re.sub('[.m²]', '', row))
     immoscout_data_new["grundstuecksflaeche"] = immoscout_data_new["grundstuecksflaeche"].apply(
@@ -157,7 +161,6 @@ def merge_data(immonet_data_new, immoscout_data_new):
         lambda x: x.replace(',', '.'))
     immoscout_data_new["grundstuecksflaeche"] = immoscout_data_new["grundstuecksflaeche"].astype(float)
 
-    # Problem mit tausender Punkten lösen
     immoscout_data_new["wohnflaeche"] = immoscout_data_new["wohnflaeche"].astype(str).apply(
         lambda row: re.sub('[m²]', '', row))
     immoscout_data_new["wohnflaeche"] = immoscout_data_new["wohnflaeche"].apply(
@@ -181,21 +184,23 @@ def merge_data(immonet_data_new, immoscout_data_new):
         lambda row: re.sub(',', '.', str(row)))
     immoscout_data_new["energie_verbrauch"] = pd.to_numeric(immoscout_data_new["energie_verbrauch"])
 
-    # Spalten alphabetisch sortieren
-    immonet_data = immonet_data_new.reindex(sorted(immonet_data_new.columns), axis=1)
-    immoscout_data = immoscout_data_new.reindex(sorted(immoscout_data_new.columns), axis=1)
+    # Spalten alphabetisch sortieren für bessere Übersicht in Ausgaben etc.
+    immonet_data_new = immonet_data_new.reindex(sorted(immonet_data_new.columns), axis=1)
+    immoscout_data_new = immoscout_data_new.reindex(sorted(immoscout_data_new.columns), axis=1)
 
-    # Innerjoin reicht hier aus
+    # Datensätze joinen
     merged_data = pd.concat([immoscout_data_new, immonet_data_new], axis=0, ignore_index=True, join="inner")
 
-    # Duplikate droppen
+    # Duplikate entfernen, auf Basis von Wohnfläche, Grundstücksfläche und Zimmeranzahl ->
+    # Merkmalskombination explorativ als zuverlässigste Kombination ermittelt
+    # Angebotspreis absichtlich nicht mit einbezogen, da Preisänderungen auf den Websites häufig sind
     merged_data = merged_data.drop_duplicates(subset=['wohnflaeche', 'grundstuecksflaeche', 'anzahl_zimmer'])
 
     return merged_data
 
 
 def preprocess_data(merged_data):
-    # Tausender Stellen - Scraper Fehler -> abgeschnittene Nullen korrigieren
+    # Sonderfall: Tausender Stellen - Immoscout-Scraper schneidet Nullen im Angebotspreis weg
     merged_data.loc[merged_data["angebotspreis"] <= 10000, "angebotspreis"] = merged_data["angebotspreis"] * 1000
 
     # Umbenennungen
@@ -205,10 +210,11 @@ def preprocess_data(merged_data):
     merged_data = merged_data.dropna(subset=["angebotspreis"])
 
     # Nicht verwendbare Spalten droppen
+    # Ausschluss auf Grund von zu vielen NaN / Null Werten
     merged_data = merged_data.drop(
         columns=['anzahl_schlafzimmer', 'energie_verbrauch', 'geschoss'])
 
-    # Spalten-Datentypen bearbeiten
+    # Spalten-Datentypen anpassen
     merged_data["einwohner"] = pd.to_numeric(merged_data["einwohner"])
     merged_data["terrasse_balkon"] = merged_data["terrasse_balkon"].astype("category")
     merged_data["barrierefrei"] = merged_data["barrierefrei"].astype("category")
@@ -223,8 +229,9 @@ def preprocess_data(merged_data):
     merged_data["vermietet"] = merged_data["vermietet"].astype("category")
     merged_data["aufzug"] = merged_data["aufzug"].astype("category")
 
+    # Kategorische Spalten anpassen
+    # Kategorien zusammenfassen, (zu) kleine Kategorien in Sammler "Sonstige" zusammenfassen
 
-    # Kategorische Spalten anpassen (Kategorien zusammenfassen, kleine Kategorien in Sammler "Sonstige" zusammenfassen)
     merged_data["energietyp"] = merged_data["energietyp"].apply(
         lambda row: str(row).split(",")[0])
     merged_data["energietyp"] = merged_data["energietyp"].apply(
@@ -241,7 +248,6 @@ def preprocess_data(merged_data):
         lambda row: 'Sonstige' if row not in ["", np.nan, "Zentralheizung", "Etagenheizung", "Ofenheizung",
                                               "Fußbodenheizung"] else row)
 
-    # Immobilienart
     merged_data["immobilienart"] = merged_data["immobilienart"].apply(
         lambda row: 'Einfamilienhaus' if row == "Einfamilienhaus (freistehend)" else row)
     merged_data["immobilienart"] = merged_data["immobilienart"].apply(
@@ -276,6 +282,7 @@ def preprocess_data(merged_data):
 
 
 def impute_data(preprocessed_data):
+
     # Zufällig mit vorhandenen Werten auffüllen
     preprocessed_data.loc[preprocessed_data["anzahl_badezimmer"] == 0, "anzahl_badezimmer"] = np.nan
     preprocessed_data["anzahl_badezimmer"] = preprocessed_data["anzahl_badezimmer"].apply(
@@ -287,7 +294,10 @@ def impute_data(preprocessed_data):
     preprocessed_data["baujahr"] = preprocessed_data["baujahr"].apply(
         lambda x: np.random.choice(preprocessed_data["baujahr"].dropna().values) if np.isnan(x) else x)
 
-    # Unbekannt für kategorische Variablen
+    # 'Unbekannt' für kategorische Variablen einfügen
+    # Je nachdem ob bereits eine 'Unbekannt' Ausprägung der Kategorie vorhanden ist, muss die entsprechende Zeile, die
+    # diese hinzugefügt hat später auskommentiert werden - sonst Fehlermeldung
+
     preprocessed_data["energietyp"] = preprocessed_data["energietyp"].astype("category")
     preprocessed_data["energietyp"] = preprocessed_data["energietyp"].cat.add_categories(["Unbekannt"])
     preprocessed_data["energietyp"] = preprocessed_data["energietyp"].fillna("Unbekannt")
@@ -311,10 +321,7 @@ def impute_data(preprocessed_data):
     # Aufzug: Annahme, wenn nicht explizit angegeben, dann existiert kein Aufzug
     preprocessed_data.loc[preprocessed_data["aufzug"].isna(), "aufzug"] = "NEIN"
 
-
-
-
-# Lennarts Anpassungen
+    # Außreißer eindämmen:
 
     # Alle Immobilien mit Angebotspreisen <= 100000 raus
     preprocessed_data = preprocessed_data[preprocessed_data['angebotspreis'] >= 100000.0]
@@ -330,6 +337,8 @@ def impute_data(preprocessed_data):
     # In Int umwandeln
     preprocessed_data['baujahr'] = preprocessed_data['baujahr'].astype(int)
 
+    # Spalten-Reformatierung:
+
     # Breitengrad/Längengrad als Zahl
     preprocessed_data['breitengrad'] = preprocessed_data['breitengrad'].astype(float)
     preprocessed_data['laengengrad'] = preprocessed_data['laengengrad'].astype(float)
@@ -341,32 +350,32 @@ def impute_data(preprocessed_data):
     # Einwohner als Zahl
     preprocessed_data['einwohner'] = preprocessed_data['einwohner'].astype(int)
 
-    # Listen der immobilienarten für haus und wohnung
+    # Sonderfall: Grundstücksfläche bei Wohnungen
+    # Listen der immobilienarten für Haus und Wohnung
     wohnung = ['Wohnung', 'Etagenwohnung', 'Penthouse', 'Erdgeschosswohnung', 'Maisonette', 'Apartment',
                'Dachgeschosswohnung']
     haus = ['Bungalow', 'Doppelhaushälfte', 'Einfamilienhaus', 'Mehrfamilienhaus', 'Reiheneckhaus', 'Reihenendhaus',
             'Reihenmittelhaus', 'Schloss', 'Sonstige', 'Unbekannt', 'Villa', 'Zweifamilienhaus']
 
-    # datensatz aufteilen in haus und wohnung
+    # Datensatz aufteilen in Häuser und Wohnungen
     preprocessed_data_wohnung = preprocessed_data[preprocessed_data['immobilienart'].isin(wohnung)]
     preprocessed_data_haus = preprocessed_data[preprocessed_data['immobilienart'].isin(haus)]
 
-    # alle NaN bei haus dropen bei wohnung gleich 0 setzen
+    # Alle NaN bei Grundstücksfläche und Haus droppen
+    # Bei Wohnung gleich 0 setzen
     preprocessed_data_haus = preprocessed_data_haus.dropna()
     preprocessed_data_wohnung['grundstuecksflaeche'] = preprocessed_data_wohnung['grundstuecksflaeche'].fillna(0)
 
-    # datensatz wieder zusammenführen
-    imputed_data = pd.concat([preprocessed_data_haus, preprocessed_data_wohnung], axis=0, ignore_index=True, join="inner")
-
-
-
-
+    # Datensatz wieder zusammenführen
+    imputed_data = pd.concat([preprocessed_data_haus, preprocessed_data_wohnung], axis=0, ignore_index=True,
+                             join="inner")
 
     return imputed_data
 
 
 def eda(data):
 
+    # EDA Basics - In fertiger Anwendung (gui.py) später über API gelöst
     # Differenzierung von numerischen und kategorischen Variablen
     numeric_data = data.select_dtypes(include=['float64', 'int64'])
     # numeric_data = numeric_data.drop(columns=["angebotspreis"])
@@ -396,8 +405,8 @@ def eda(data):
     plt.clf()
 
     # Korrelation numerische Variablen
-    corrMatrix = numeric_data.corr()
-    sns.heatmap(corrMatrix, annot=True)
+    corr_matrix = numeric_data.corr()
+    sns.heatmap(corr_matrix, annot=True)
     plt.savefig(r"Files/EDA_Grafiken/Heatmap_Correlation")
     plt.clf()
 
@@ -414,10 +423,10 @@ def eda(data):
     plt.clf()
 
     # Countplots für kategorische Variablen
-    CatFacetGrid = sns.FacetGrid(categoric_data.melt(), col='variable', sharex=False, dropna=True, sharey=False, height=4,
-                                 col_wrap=4)
-    CatFacetGrid.set_xticklabels(rotation=90)
-    CatFacetGrid.map(sns.countplot, 'value')
+    cat_facet_grid = sns.FacetGrid(categoric_data.melt(), col='variable', sharex=False, dropna=True, sharey=False,
+                                   height=4, col_wrap=4)
+    cat_facet_grid.set_xticklabels(rotation=90)
+    cat_facet_grid.map(sns.countplot, 'value')
     plt.savefig(r"Files/EDA_Grafiken/Countplots_Categories")
     plt.clf()
 

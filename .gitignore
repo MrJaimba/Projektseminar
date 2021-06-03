@@ -1,6 +1,10 @@
-#Ignored Files
+# Ignored Files
 venv/
-*.pckl
-/*.pckl
 /.idea
 .DS_Store
+# Pckl Dateien, in denen die trainierten ML-Modelle gespeichert werden sind zu groß für GitHub.
+# Optional: Einbindung der LargeFile Extension für GitHub
+# Gegen diese Option entschieden, da bei richtigem Deployment die Modelle in die Datenbank (geeignete Struktur)
+# übertragen werden können.
+*.pckl
+/*.pckl

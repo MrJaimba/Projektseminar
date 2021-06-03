@@ -3,25 +3,10 @@ import requests
 from urllib.parse import urljoin
 import re
 import csv
-# import sqlite3
-
-
-# TO-DO:
-# - Codestruktur anpassen / Kapselung
-# - print Befehle aussortieren -> Laufzeit
-# - "Start-URL" nicht hardcoded?
-# - Datentypen Validierung in Abfrage integrieren
-# - Ergebnisse in DB schreiben anstatt in CSV File
-# - Scraper auf andere Immobilienseiten anpassen? Mehraufwand schätzen!
-
-
-# Allgemein:
-# - Scraping von hidden-print Elementen nicht möglich - bspw. Immonet-ID (class)
 
 
 class ImmoFetcher:
-    # TO-DO: Warum self übergeben? Wird nicht verwendet? Deshalb PyCharm Vorschlag static Method daraus zu machen. URL
-    # als Parameter?
+
     def fetch(self):
         # Start URL: Erste Seite der Suchergebnisse
         url = 'https://www.immonet.de/immobiliensuche/sel.do?pageoffset=1&listsize=26&objecttype=1&locationname=W%C3' \
@@ -148,7 +133,6 @@ class ImmoFetcher:
                 # print('zimmer_anzahl: ' + str(anzahl_zimmer))
 
                 # Anzahl der Schlafzimmer (Integer) auslesen
-                # TO-DO: Generell überarbeiten? Welches Feld abfragen und nach welchem Schlüsselwort suchen
                 anzahl_schlafzimmer = soup_immosite.find('p', id='otherDescription')
                 if anzahl_schlafzimmer is not None:
                     anzahl_schlafzimmer = soup_immosite.find('p', id='otherDescription').text.strip().split()
@@ -163,14 +147,7 @@ class ImmoFetcher:
                     anzahl_schlafzimmer = int(99)
                 # print('anzahlschlafzimmer: ' + str(anzahl_schlafzimmer))
 
-
-
-
-
-
-
                 # Anzahl der Badezimmer (Integer) auslesen
-                # TO-DO_ Generell überarbeiten? Welches Feld abfragen und nach welchem Schlüsselwort suchen
                 anzahl_badezimmer = soup_immosite.find('p', id='otherDescription')
                 if anzahl_badezimmer is not None:
                     anzahl_badezimmer = soup_immosite.find('p', id='otherDescription').text.strip().split()
@@ -250,13 +227,7 @@ class ImmoFetcher:
                     vermietet = False
                 # print('vermietet: ' + str(vermietet))
 
-
-
-
-
-
-
-
+                # Aufzug (Boolean) auslesen
                 aufzug = soup_immosite.find('li', id='featureId_68')
                 aufz_sonstiges = soup_immosite.find('p', id='otherDescription')
                 aufz_objektbeschreibung = soup_immosite.find('p', id='objectDescription')
@@ -279,13 +250,9 @@ class ImmoFetcher:
                         aufzug = 'NEIN'
                 else:
                     aufzug = 'NEIN'
-                print('aufzug: ' + aufzug)
+                # print('aufzug: ' + aufzug)
 
-
-
-
-
-
+                # Barrierefrei (Boolean) auslesen
                 barrierefrei = soup_immosite.find('li', id='featureId_167')
                 barrierefrei2 = soup_immosite.find('li', id='featureId_285')
                 ba_ausstattung = soup_immosite.find('div', id='ausstattung')
@@ -319,17 +286,9 @@ class ImmoFetcher:
                         barrierefrei = 'NEIN'
                 else:
                     barrierefrei = 'NEIN'
-                print('barrierefrei: ' + barrierefrei)
+                # print('barrierefrei: ' + barrierefrei)
 
-
-
-
-
-
-
-
-
-                # Mit was wird denkmalschutz initialisiert? Wird später nicht verwendet, sondern nur überschrieben
+                # Denkmalschutz (Boolean) auslesen
                 denkmalschutz = soup_immosite.find('p', id='objectDescription')
                 denkm_objektbeschreibung = soup_immosite.find('p', id='objectDescription')
                 denkm_sonstiges = soup_immosite.find('p', id='otherDescription')
@@ -363,7 +322,7 @@ class ImmoFetcher:
                         denkmalschutz = 'NEIN'
                 else:
                     denkmalschutz = 'NEIN'
-                print('denkmalschutz: ' + denkmalschutz)
+                # print('denkmalschutz: ' + denkmalschutz)
 
                 # 5. Kategorische Features
 
@@ -400,11 +359,7 @@ class ImmoFetcher:
                     befeuerungsart = 'Unbekannt'
                 # print('befeuerungsart: ' + befeuerungsart)
 
-
-
-
-
-
+                # Geschoss (String) auslesen
                 geschoss = soup_immosite.find('li', id='featureId_123')
                 if geschoss is not None:
                     geschoss = soup_immosite.find('li', id='featureId_123').text.strip().split()[-1]
@@ -412,28 +367,23 @@ class ImmoFetcher:
                     geschoss = '0'
                 else:
                     geschoss = ''
-                print('geschoss: ' + geschoss)
+                # print('geschoss: ' + geschoss)
 
+                # Energieverbrauch (String) auslesen
                 energie_verbrauch = soup_immosite.find('div', id='energyValue')
                 if energie_verbrauch is not None:
                     energie_verbrauch = soup_immosite.find('div', id='energyValue').text.strip().split()[0]
                 else:
                     energie_verbrauch = ''
-                print('energie_verbrauch: ' + energie_verbrauch)
+                # print('energie_verbrauch: ' + energie_verbrauch)
 
+                # Energieeffizienzklasse (String) auslesen
                 energie_effizienzklasse = soup_immosite.find('div', id='efficiencyValue')
                 if energie_effizienzklasse is not None:
                     energie_effizienzklasse = soup_immosite.find('div', id='efficiencyValue').text.strip().split()[-1]
                 else:
                     energie_effizienzklasse = ''
-                print('energie_effizienzklasse: ' + energie_effizienzklasse)
-
-
-
-
-
-
-
+                # print('energie_effizienzklasse: ' + energie_effizienzklasse)
 
                 # Immobilienobjekt erzeugen
                 scraped = ScrapedRealEstate(immo_url, ort, plz, angebotspreis, grundstuecksflaeche, wohnflaeche,
@@ -442,6 +392,8 @@ class ImmoFetcher:
                                             heizung, befeuerungsart, anzahl_etagen, geschoss, unterkellert, vermietet,
                                             energie_verbrauch, energie_effizienzklasse, aufzug, barrierefrei,
                                             denkmalschutz)
+
+                # Immobilie hinzufügen
                 immo_list.append(scraped)
 
             # Absprung zur nächsten Seite der Suchergebnisse
@@ -489,7 +441,7 @@ class ScrapedRealEstate:
         self.denkmalschutz = denkmalschutz
 
 
-# Eigentlicher Starpunkt/init
+# Scraper erzeugen/initialisieren
 fetcher = ImmoFetcher()
 
 # CSV Erstellung
