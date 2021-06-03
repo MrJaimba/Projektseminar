@@ -375,7 +375,7 @@ def impute_data(preprocessed_data):
 
 def eda(data):
 
-    # EDA Basics - In fertiger Anwendung (gui.py) später über API gelöst
+    # EDA Basics - In fertiger Anwendung (GUI.py) später über API gelöst
     # Differenzierung von numerischen und kategorischen Variablen
     numeric_data = data.select_dtypes(include=['float64', 'int64'])
     # numeric_data = numeric_data.drop(columns=["angebotspreis"])
