@@ -11,6 +11,7 @@ from streamlit_pandas_profiling import st_profile_report
 # from streamlit import cli as stcli
 from pandas_profiling import ProfileReport
 
+#Datenbankverbindung
 db_connection = sqlite3.connect('Datenbank/ImmoDB.db')
 
 # Allgemeine Streamlit Einstellungen (Tab Name; Icon; Seitenlayout; Menü)
