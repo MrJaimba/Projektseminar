@@ -411,7 +411,9 @@ with feature_importances:
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
-# weitere graphische Darstellungen
+# weitere Informationen
+
+# graphische Datenverteilung
 if st.button('Geographische Verteilung der Inputdaten'):
     data = pd.read_sql_query('SELECT breitengrad as lat, laengengrad as lon from Imputed_data_raw', con=db_connection)
     # data = pd.read_csv('Files/GUI/imputed_data_original.csv')
