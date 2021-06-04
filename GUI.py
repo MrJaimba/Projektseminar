@@ -394,6 +394,9 @@ with Metadaten_plz:
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
+# weitere Informationen
+
+# Grafiken der wichtigsten Features
 feature_importances = st.beta_expander('Anzeige der wichtigsten Features')
 with feature_importances:
     if modell == 'XG Boost':
@@ -410,8 +413,6 @@ with feature_importances:
 # Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
-
-# weitere Informationen
 
 # graphische Datenverteilung
 if st.button('Geographische Verteilung der Inputdaten'):
