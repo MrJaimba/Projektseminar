@@ -224,7 +224,7 @@ if st.button('Wertanalyse starten'):
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
-# Überschrift 3: Datenanalyse
+# Infotext zu Metadaten
 st.subheader('Du benötigst weitere Informationen?')
 st.write(
     'Neben einer genauen Bewertung deines Immobilienwertes bieten wir dir tiefgreifendere Informationen für eine '
@@ -232,7 +232,7 @@ st.write(
     'folgenden interaktive Datenvisualisierungen bereit. Am Ende der Seite findest du sogar eine explorative '
     'Datenanalyse, die dir einen Einblick in unsere Daten bieten soll.')
 
-# weitere Informationen zur Umgebung
+# Auswahl der PLZ und einlesen der Metadaten
 Metadaten_plz = st.beta_expander('weitere Informationen zur Umgebung')
 with Metadaten_plz:
     st.write('Wähle eine Postleitzahl, zu der du weitere Informationen erhalten möchtest:')
@@ -277,6 +277,7 @@ with Metadaten_plz:
     Meta_verstädterung = Meta[Meta['plz'] == plz]['Grad_der_Verstädterung'].to_list()[0]
     Meta_übernachtungen = Meta[Meta['plz'] == plz]['Anzahl Gästeübernachtungen in 2019'].to_list()[0]
 
+    # 1. Metadatendarstellung (Allgemein)
     col1, col2 = st.beta_columns(2)
     with col1:
         st.write('Durchschnittseinkommen:')
@@ -301,6 +302,7 @@ with Metadaten_plz:
     st.write('---')
     st.write('Durch Klicken auf die jeweiligen Button, erhältst du nähere Informationen:')
 
+    # 2. Metadatendarstellung (Bildungsniveau)
     if st.button('Informationen zum Bildungsniveau'):
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -317,6 +319,7 @@ with Metadaten_plz:
             st.write('Anteil Absolventen mit allgemeiner Hochschulreife:')
             st.info(Meta_allghoch)
 
+    # 3. Metadatendarstellung (finanzielle und soziale Indikatoren)
     if st.button('finanzielle und soziale Indikatoren'):
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -339,6 +342,7 @@ with Metadaten_plz:
             st.write('Anzahl Gästeübernachtungen im Jahr:')
             st.info(Meta_übernachtungen)
 
+    # 4. Metadatendarstellung (Flächennutzung)
     if st.button('Anteil der Flächennutzung'):
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -361,6 +365,7 @@ with Metadaten_plz:
             st.write('Anteil Erholungsflächen an Gesamtfläche:')
             st.info(Meta_erholunggesamt)
 
+    # 5. Metadatendarstellung (Erreichbarkeiten)
     if st.button('Erreichbarkeiten wesentlicher Einrichtungen'):
         st.write('Angaben in Wegzeit mit dem Auto in Minuten')
         col1, col2 = st.beta_columns(2)
