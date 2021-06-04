@@ -49,15 +49,14 @@ with infos:
         'So kannst du zum Beispiel zukünftige Investitionen in deine Immobilie besser planen.')
 st.write('')
 
-# Überschrift und Abstandshalter
+# Überschrift und Abstandhalter
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 st.subheader('Beschreibe deine Immobilie:')
 
-
 # Definition der UI Eingabemaske (Features)
 def user_input_features():
+    
     # Eingabefeld 1 (Wohnfläche, Grundstücksfläche, Baujahr, PLZ)
-
     col1, col2 = st.beta_columns(2)
     with col1:
         wohnflaeche = st.number_input('Wohnfläche', value=100)
@@ -147,7 +146,7 @@ def user_input_features():
     features = features.assign(unterkellert=(features['unterkellert'] == 'JA').astype(int))
     features = features.assign(vermietet=(features['vermietet'] == 'JA').astype(int))
 
-    # Metadaten aus Datenbank auslesen
+    # Metadaten aus Datenbank einlesen
     metadaten = pd.read_sql_query('SELECT * FROM Meta_Data_upd2 WHERE plz=plz', con=db_connection, index_col="index")
     metadaten = metadaten.assign(supermarkt_im_plz_gebiet=(metadaten['Supermarkt im PLZ Gebiet'] == 'JA').astype(int))
     metadaten.drop(columns=['Supermarkt im PLZ Gebiet'], inplace=True)
@@ -166,23 +165,8 @@ def user_input_features():
                        'sozioökonomische_Lage=\'' + soziolage + '\''
     soziolage = np.float32(pd.read_sql_query(soziolage_string, con=db_connection).iloc[0][0])
     features['sozioökonomische_Lage'] = soziolage
-
-    # num_scaler = pickle.load(open('Projektseminar/num_scaler.pckl', 'rb'))
-
-    # cat_features = features[['energietyp', 'energie_effizienzklasse',
-    #                               'heizung', 'immobilienart', 'immobilienzustand', 'Grad_der_Verstädterung',
-    #                               'sozioökonomische_Lage']]
-    # features.drop(columns=['energietyp', 'energie_effizienzklasse',
-    #   'heizung', 'immobilienart', 'immobilienzustand', 'Grad_der_Verstädterung',
-    #  'sozioökonomische_Lage'], inplace=True)
-
-    # features = pd.DataFrame(num_scaler.transform(features),
-    #  columns=features.columns, index=features.index)
-
-    # features.to_sql(name='Features_scaler', con=db_connection, if_exists='replace')
-
-    # features = pd.concat([features, cat_features], axis=1)
-
+    
+    # Umbenennung der Spalten
     features.rename(
         columns={'immobilienart': 'immobilienart_targetenc', 'immobilienzustand': 'immobilienzustand_targetenc',
                  'energietyp': 'energietyp_targetenc', 'energie_effizienzklasse': 'energie_effizienzklasse_targetenc',
@@ -193,10 +177,9 @@ def user_input_features():
     features.to_sql(name='Features', con=db_connection, if_exists='replace')
     return features
 
-
 input_df = user_input_features()
 
-# Abstandshalter
+# Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
@@ -216,7 +199,7 @@ with rmse_r2:
     st.image('Files/Feature_Importances_Grafiken/RMSE.jpg')
     st.image('Files/Feature_Importances_Grafiken/R2.jpg')
 
-# Abstandshalter
+# Abstandhalter
 st.write(' ')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
@@ -227,7 +210,7 @@ if st.button('Wertanalyse starten'):
     output = str(output) + '€'
     st.success('Der Wert Ihrer Immobilie liegt bei {}'.format(output))
 
-# Abstandshalter
+# Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
@@ -398,7 +381,7 @@ with Metadaten_plz:
             st.write('Erreichbarkeit Oberzentrum')
             st.info(Meta_oberzentrum)
 
-# Abstandshalter
+# Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
@@ -415,7 +398,7 @@ with feature_importances:
             'Voting Regressor ist eine Kombination der drei vorherigen Modelle. Um Informationen zur Feature '
             'Importance zu erhalten, sollten diese ausgewählt werden.')
 
-# Abstandshalter
+# Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
@@ -425,19 +408,13 @@ if st.button('Geographische Verteilung der Inputdaten'):
     # data = pd.read_csv('Files/GUI/imputed_data_original.csv')
     st.map(data)
 
-# Abstandshalter
+# Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
 # EDA_Grafiken
 if st.button('Explorative Datenanalyse der Inputdaten'):
-    # data = pd.read_sql_query('SELECT * FROM Imputed_data_raw', con=db_connection)
-    # data.drop(columns=['plz', 'breitengrad', 'laengengrad'], inplace=True)
-    # data = data.profile_report()
-    # st_profile_report(data)
-
     data = pd.read_sql_query('SELECT * FROM profile_report_data', con=db_connection)
     data.drop(columns=['index', 'plz'], inplace=True)
     pr = ProfileReport(data.iloc[:, : 18], explorative=True)
-    # load_pr = pickle.load(open('profile_report.pckl', 'rb'))
     st_profile_report(pr)
