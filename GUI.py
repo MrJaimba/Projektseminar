@@ -3,13 +3,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import pickle
-# import pandas_profiling
 
-# from streamlit.script_runner import RerunException
 from streamlit.script_runner import StopException
 from streamlit_pandas_profiling import st_profile_report
-# from streamlit import cli as stcli
 from pandas_profiling import ProfileReport
+
 
 #Datenbankverbindung
 db_connection = sqlite3.connect('Datenbank/ImmoDB.db')
