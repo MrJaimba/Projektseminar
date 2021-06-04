@@ -15,7 +15,7 @@ db_connection = sqlite3.connect('Datenbank/ImmoDB.db')
 # Allgemeine Streamlit Einstellungen (Tab Name; Icon; Seitenlayout; Menü)
 st.set_page_config('AWI', 'Projektseminar/Files/GUI/Logo AWI klein.jpg', 'centered', 'expanded')
 
-# Logo einfügen
+# Logo und Abstandhalter einfügen
 st.image('Files/GUI/Logo AWI.jpg')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
@@ -25,7 +25,7 @@ st.write(
     'Du möchtest den Wert deiner Immobilie exakt berechnen und benötigst weiterführende Analysemöglichkeiten rund um '
     'deine Immobilie? Dann bist du bei AWI genau richtig!')
 
-# Button und Infotext
+# Button und Infofeld
 infos = st.beta_expander('Mehr Informationen')
 with infos:
     st.write('Was ist AWI?')
@@ -51,6 +51,8 @@ st.write('')
 # Überschrift und Abstandhalter
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 st.subheader('Beschreibe deine Immobilie:')
+
+# Eingabe
 
 # Definition der UI Eingabemaske (Features)
 def user_input_features():
@@ -108,6 +110,8 @@ def user_input_features():
         energie_effizienzklasse = st.selectbox('Energieeffizienzklasse',
                                                ('A', 'A+', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'Unbekannt'))
 
+# Codierung und Zuordnung
+      
     # Kategorische Variablen codieren
     immobilienart_string = 'SELECT immobilienart_targetenc FROM Encoding_immobilienart WHERE immobilienart=\'' + \
                            immobilienart + '\''
@@ -178,11 +182,15 @@ def user_input_features():
 
 input_df = user_input_features()
 
+#Modelle und Output
+
 # Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
+# Auswahl des gewünschten Modells
 modell = st.selectbox('Wähle Vorhersagemodell', ('XG Boost', 'Gradient Boosting', 'Random Forrest', 'Voting Regressor'))
+
 # Einlesen des Models aus der Pickle-Datei
 if modell == 'XG Boost':
     load_modell = pickle.load(open('ML_Modelle/XGB_Standardmodell.pckl', 'rb'))
@@ -193,6 +201,7 @@ elif modell == 'Random Forrest':
 elif modell == 'Voting Regressor':
     load_modell = pickle.load(open('ML_Modelle/Voting_Regressor.pckl', 'rb'))
 
+# Übersicht RMSE und R2 Werte
 rmse_r2 = st.beta_expander('Übersicht der RMSE Werte und R2 Scores der einzelnen Modelle')
 with rmse_r2:
     st.image('Files/Feature_Importances_Grafiken/RMSE.jpg')
@@ -209,6 +218,8 @@ if st.button('Wertanalyse starten'):
     output = str(output) + '€'
     st.success('Der Wert Ihrer Immobilie liegt bei {}'.format(output))
 
+# Metadaten
+    
 # Abstandhalter
 st.write('')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
@@ -233,7 +244,6 @@ with Metadaten_plz:
     st.write('---')
 
     Meta = pd.read_sql_query('SELECT * FROM Meta_Data_upd2 WHERE plz=plz', con=db_connection, index_col="index")
-    # Meta_ort = Meta[Meta['plz'] == plz]['Hilfe Ort'].to_list()[0]
     Meta_einwohner = Meta[Meta['plz'] == plz]['Einwohner je PLZ'].to_list()[0]
     Meta_einkommen = str(Meta[Meta['plz'] == plz]['Durschnittseinkommen'].to_list()[0]) + '€'
     Meta_arbeit = Meta[Meta['plz'] == plz]['Arbeitslosenquote in Prozent'].to_list()[0]
