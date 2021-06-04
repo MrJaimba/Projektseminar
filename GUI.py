@@ -9,13 +9,13 @@ from streamlit_pandas_profiling import st_profile_report
 from pandas_profiling import ProfileReport
 
 
-#Datenbankverbindung
+# Datenbankverbindung
 db_connection = sqlite3.connect('Datenbank/ImmoDB.db')
 
 # Allgemeine Streamlit Einstellungen (Tab Name; Icon; Seitenlayout; Menü)
 st.set_page_config('AWI', 'Projektseminar/Files/GUI/Logo AWI klein.jpg', 'centered', 'expanded')
 
-# Logo und Abstandhalter einfügen
+# Logo und Abstandhalter
 st.image('Files/GUI/Logo AWI.jpg')
 st.image('Files/GUI/AbstandshalterAWI.jpg')
 
@@ -112,7 +112,7 @@ def user_input_features():
 
 # Codierung und Zuordnung
       
-    # Kategorische Variablen codieren
+    # Codierung kategorische Variablen
     immobilienart_string = 'SELECT immobilienart_targetenc FROM Encoding_immobilienart WHERE immobilienart=\'' + \
                            immobilienart + '\''
     immobilienart = np.float32(pd.read_sql_query(immobilienart_string, con=db_connection).iloc[0][0])
@@ -149,7 +149,7 @@ def user_input_features():
     features = features.assign(unterkellert=(features['unterkellert'] == 'JA').astype(int))
     features = features.assign(vermietet=(features['vermietet'] == 'JA').astype(int))
 
-    # Metadaten aus Datenbank einlesen
+    # Metadaten aus Datenbank
     metadaten = pd.read_sql_query('SELECT * FROM Meta_Data_upd2 WHERE plz=plz', con=db_connection, index_col="index")
     metadaten = metadaten.assign(supermarkt_im_plz_gebiet=(metadaten['Supermarkt im PLZ Gebiet'] == 'JA').astype(int))
     metadaten.drop(columns=['Supermarkt im PLZ Gebiet'], inplace=True)
@@ -182,7 +182,7 @@ def user_input_features():
 
 input_df = user_input_features()
 
-#Modelle und Output
+# Modelle und Output
 
 # Abstandhalter
 st.write('')
@@ -277,7 +277,7 @@ with Metadaten_plz:
     Meta_verstädterung = Meta[Meta['plz'] == plz]['Grad_der_Verstädterung'].to_list()[0]
     Meta_übernachtungen = Meta[Meta['plz'] == plz]['Anzahl Gästeübernachtungen in 2019'].to_list()[0]
 
-    # 1. Metadatendarstellung (Allgemein)
+    # Metadatendarstellung 1 (Allgemein)
     col1, col2 = st.beta_columns(2)
     with col1:
         st.write('Durchschnittseinkommen:')
@@ -302,7 +302,7 @@ with Metadaten_plz:
     st.write('---')
     st.write('Durch Klicken auf die jeweiligen Button, erhältst du nähere Informationen:')
 
-    # 2. Metadatendarstellung (Bildungsniveau)
+    # Metadatendarstellung 2 (Bildungsniveau)
     if st.button('Informationen zum Bildungsniveau'):
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -319,7 +319,7 @@ with Metadaten_plz:
             st.write('Anteil Absolventen mit allgemeiner Hochschulreife:')
             st.info(Meta_allghoch)
 
-    # 3. Metadatendarstellung (finanzielle und soziale Indikatoren)
+    # Metadatendarstellung 3 (finanzielle und soziale Indikatoren)
     if st.button('finanzielle und soziale Indikatoren'):
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -342,7 +342,7 @@ with Metadaten_plz:
             st.write('Anzahl Gästeübernachtungen im Jahr:')
             st.info(Meta_übernachtungen)
 
-    # 4. Metadatendarstellung (Flächennutzung)
+    # Metadatendarstellung 4 (Flächennutzung)
     if st.button('Anteil der Flächennutzung'):
         col1, col2 = st.beta_columns(2)
         with col1:
@@ -365,7 +365,7 @@ with Metadaten_plz:
             st.write('Anteil Erholungsflächen an Gesamtfläche:')
             st.info(Meta_erholunggesamt)
 
-    # 5. Metadatendarstellung (Erreichbarkeiten)
+    # Metadatendarstellung 5 (Erreichbarkeiten)
     if st.button('Erreichbarkeiten wesentlicher Einrichtungen'):
         st.write('Angaben in Wegzeit mit dem Auto in Minuten')
         col1, col2 = st.beta_columns(2)
